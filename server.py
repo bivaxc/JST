@@ -14,7 +14,8 @@ import time
 ROOT = Path(__file__).resolve().parent
 DB_PATH = ROOT / "jst_portal.sqlite3"
 ADMIN_FILE = ROOT / "jst_admin_credentials.txt"  # Deny access if an older credentials file exists.
-HOST, PORT = "127.0.0.1", 8000
+HOST = "0.0.0.0"
+PORT = int(os.environ.get("PORT", "8000"))
 SESSION_SECONDS = 12 * 60 * 60
 PBKDF2_ROUNDS = 310_000
 
@@ -134,6 +135,8 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         path = urlparse(self.path).path
+        if path == "/healthz":
+            return self.send_json(200, {"status": "ok"})
         if path.startswith("/api/"):
             if path == "/api/me":
                 user = self.current_user()
@@ -275,5 +278,5 @@ class Handler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     initialize()
-    print(f"JST portal: http://{HOST}:{PORT}/index.html#account", flush=True)
+    print(f"JST portal listening on {HOST}:{PORT}", flush=True)
     ThreadingHTTPServer((HOST, PORT), Handler).serve_forever()
