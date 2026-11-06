@@ -20,7 +20,7 @@ This repository includes a Render Blueprint in `render.yaml`.
 4. Review the service configuration and create the Blueprint.
 5. Wait for the deploy to become live. The health endpoint is `/healthz`.
 
-The service listens on `0.0.0.0:$PORT`. SQLite is stored under `JST_DATA_DIR`, configured as `/var/data` on Render. The Blueprint attaches a 1 GB persistent disk. Render persistent disks require a paid web-service plan; the disk is necessary because the default service filesystem is ephemeral.
+The service listens on `0.0.0.0:$PORT`. This Blueprint uses Render's Free web-service plan for a temporary demonstration. SQLite is stored on the service's ephemeral filesystem, so registrations and orders can be lost whenever the service spins down, restarts, or redeploys. Free services also spin down after 15 minutes without inbound traffic and can take about a minute to wake up. Do not use this setup for data that must be retained. A paid web service with a persistent disk, or a properly configured external database, is required for durable storage.
 
 ## Important: demonstration only
 
