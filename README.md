@@ -1,25 +1,40 @@
-# JST OMC Portal — local demo
+# JST OMC Portal
 
-## Run
+## Local run
 
-From this folder, start the local server:
-
-```powershell
+```bash
 python server.py
 ```
 
-Open <http://127.0.0.1:8000/index.html#account>. Sign in to the OMC Account area with the administrator details provided in the Codex conversation. Stop the server with `Ctrl+C`.
+Open http://127.0.0.1:8000/index.html#account.
 
-New installations create `admin@jst.local` with a random password and print that password once in the server console. The current workspace already has its administrator seeded.
+For a fresh local database, set `JST_ADMIN_PASSWORD` to a unique password of at least 16 characters before the first startup. The initial administrator email is `admin@jst.local`. The password is never printed by the application.
 
-## OMC workflow
+## Render deployment
 
-An OMC submits its registered business name, 10-digit TIN, registration number, contact details, and password. The account is pending until an administrator approves it. Approved OMC users can submit PMS or AGO requests. The administrator can review and approve or decline account applications and order requests.
+This repository includes a Render Blueprint in `render.yaml`.
 
-## Local-only scope
+1. Sign in to Render and choose **New > Blueprint**.
+2. Connect this GitHub repository and select the `render-deployment` branch.
+3. When prompted, provide a unique `JST_ADMIN_PASSWORD` of at least 16 characters. Store it in a password manager.
+4. Review the service configuration and create the Blueprint.
+5. Wait for the deploy to become live. The health endpoint is `/healthz`.
 
-This demo stores data in the ignored `jst_portal.sqlite3` file. Passwords are PBKDF2 hashes; sessions use HttpOnly, SameSite cookies; the web server binds only to `127.0.0.1`; and the database and bootstrap credential path are not served as static files. TINs are stored as ordinary SQLite values, and company registration is manually reviewed rather than checked against URA or URSB. Use dummy business details for demos. Before handling real TINs, deploying beyond localhost, or treating orders as operational, add encrypted data-at-rest storage, HTTPS, CSRF/rate limiting, secure admin password reset, audit logging, authoritative registry verification, backups, and UNOC fulfilment integrations.
+The service listens on `0.0.0.0:$PORT`. SQLite is stored under `JST_DATA_DIR`, configured as `/var/data` on Render. The Blueprint attaches a 1 GB persistent disk. Render persistent disks require a paid web-service plan; the disk is necessary because the default service filesystem is ephemeral.
 
-## Smoke test
+## Important: demonstration only
 
-With a local database already initialized, set `JST_ADMIN_PASSWORD` to the administrator password in PowerShell, then run `python test_backend.py`. The smoke test creates and removes its temporary OMC account and request.
+The portal is a prototype. A public URL does **not** make it an approved UNOC system, and submitted orders are not transmitted to UNOC, do not reserve stock, and do not authorize collection.
+
+Use dummy company names, TINs, contacts, and orders for demonstrations only. Do not enter real OMC or customer information.
+
+Before handling real data or operational orders, the application still needs a security and operational review, including at minimum:
+- CSRF protection and rate limiting for authentication and registration endpoints.
+- A secure administrator password reset and account recovery process.
+- Audit logging for approvals, rejections, and order status changes.
+- Encryption and access controls appropriate for TINs and other personal/business data.
+- Authoritative company/TIN verification and a defined data-retention policy.
+- Tested backups and restore procedures.
+- UNOC authorization, fulfilment integration, operational ownership, and incident response.
+
+The current prototype stores TINs in SQLite as ordinary values. Do not use production data until these controls are implemented and independently tested.
