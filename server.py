@@ -205,7 +205,7 @@ class Handler(SimpleHTTPRequestHandler):
                 conn.execute("INSERT INTO sessions(token_hash,user_id,expires_at) VALUES(?,?,?)",
                              (hashlib.sha256(token.encode()).hexdigest(), row["id"], int(time.time()) + SESSION_SECONDS))
             return self.send_json(200, {"user": public_user(row)}, {
-                "Set-Cookie": f"jst_session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age={SESSION_SECONDS}"
+                "Set-Cookie": f"jst_session={token}; HttpOnly; SameSite=Strict; Path=/; Max-Age={SESSION_SECONDS}" + ("; Secure" if self.headers.get("X-Forwarded-Proto") == "https" else "")
             })
         if path == "/api/logout":
             cookie = self.headers.get("Cookie", "")
@@ -213,7 +213,7 @@ class Handler(SimpleHTTPRequestHandler):
             if token:
                 with db() as conn:
                     conn.execute("DELETE FROM sessions WHERE token_hash=?", (hashlib.sha256(token.encode()).hexdigest(),))
-            return self.send_json(200, {"ok": True}, {"Set-Cookie": "jst_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0"})
+            return self.send_json(200, {"ok": True}, {"Set-Cookie": "jst_session=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0" + ("; Secure" if self.headers.get("X-Forwarded-Proto") == "https" else "")})
         if path.startswith("/api/admin/accounts/") and path.endswith("/decision"):
             admin = self.require_user(["admin"])
             if not admin:
