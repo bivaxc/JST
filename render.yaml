@@ -15,4 +15,4 @@ services:
       - key: JST_DATA_DIR
         value: /var/data
       - key: JST_ADMIN_PASSWORD
-        generateValue: true
+        sync: false
